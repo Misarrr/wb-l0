@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WB L0 - Просмотр заказов</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .order-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .order-section {
+            margin-bottom: 20px;
+        }
+        .order-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .order-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .info-item {
+            padding: 8px;
+            background: white;
+            border-radius: 5px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 12px;
+        }
+        .info-value {
+            color: #333;
+            margin-top: 3px;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .items-table th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+        .items-table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .error {
+            color: #e74c3c;
+            padding: 15px;
+            background: #fadbd8;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ Просмотр заказа</h1>
+        
+        <div class="search-box">
+            <input type="text" id="orderID" placeholder="Введите ID заказа" value="b563feb7b2b84b6test">
+            <button onclick="getOrder()">Найти</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function getOrder() {
+            const orderID = document.getElementById('orderID').value.trim();
+            const resultDiv = document.getElementById('result');
+            
+            if (!orderID) {
+                resultDiv.innerHTML = '<div class="error">Введите ID заказа</div>';
+                return;
+            }
+
+            resultDiv.innerHTML = '<div class="loading">Загрузка...</div>';
+
+            try {
+                const response = await fetch(`/api/order?id=${orderID}`);
+                
+                if (!response.ok) {
+                    throw new Error('Заказ не найден');
+                }
+
+                const order = await response.json();
+                displayOrder(order);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+            }
+        }
+
+        function displayOrder(order) {
+            const resultDiv = document.getElementById('result');
+            
+            const itemsHTML = order.items.map(item => `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.brand}</td>
+                    <td>${item.price} ${order.payment.currency}</td>
+                    <td>${item.sale}%</td>
+                    <td>${item.total_price} ${order.payment.currency}</td>
+                </tr>
+            `).join('');
+
+            resultDiv.innerHTML = `
+                <div class="order-card">
+                    <div class="order-section">
+                        <h3>📦 Информация о заказе</h3>
+                        <div class="order-info">
+                            <div class="info-item">
+                                <div class="info-label">ID заказа</div>
+                                <div class="info-value">${order.order_uid}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Трек-номер</div>
+                                <div class="info-value">${order.track_number}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Дата создания</div>
+                                <div class="info-value">${new Date(order.date_created).toLocaleString('ru-RU')}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Служба доставки</div>
+                                <div class="info-value">${order.delivery_service}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-section">
+                        <h3>📍 Доставка</h3>
+                        <div class="order-info">
+                            <div class="info-item">
+                                <div class="info-label">Получатель</div>
+                                <div class="info-value">${order.delivery.name}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Телефон</div>
+                                <div class="info-value">${order.delivery.phone}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Email</div>
+                                <div class="info-value">${order.delivery.email}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Адрес</div>
+                                <div class="info-value">${order.delivery.address}, ${order.delivery.city}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-section">
+                        <h3>💳 Платёж</h3>
+                        <div class="order-info">
+                            <div class="info-item">
+                                <div class="info-label">Транзакция</div>
+                                <div class="info-value">${order.payment.transaction}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Провайдер</div>
+                                <div class="info-value">${order.payment.provider}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Сумма</div>
+                                <div class="info-value">${order.payment.amount} ${order.payment.currency}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Банк</div>
+                                <div class="info-value">${order.payment.bank}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-section">
+                        <h3>🛒 Товары</h3>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Название</th>
+                                    <th>Бренд</th>
+                                    <th>Цена</th>
+                                    <th>Скидка</th>
+                                    <th>Итого</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

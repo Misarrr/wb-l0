@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: wb_postgres
+    environment:
+      POSTGRES_USER: wbuser
+      POSTGRES_PASSWORD: wbpass
+      POSTGRES_DB: orders_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - wb_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wbuser -d orders_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  nats-streaming:
+    image: nats-streaming:latest
+    container_name: wb_nats
+    command: ["-cid", "test-cluster", "-p", "4222", "-m", "8222"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    networks:
+      - wb_network
+
+  app:
+    build: .
+    container_name: wb_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      nats-streaming:
+        condition: service_started
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - wb_network
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: wbuser
+      DB_PASSWORD: wbpass
+      DB_NAME: orders_db
+      NATS_URL: nats://nats-streaming:4222
+
+
+
+volumes:
+  postgres_data:
+
+networks:
+  wb_network:
+    driver: bridge
+

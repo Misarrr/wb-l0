@@ -64,15 +64,15 @@ http://localhost:8080
 
 3. СТРЕСС-ТЕСТ ЧЕРЕЗ VEGETA (WINDOWS)
    ------------------------------------
+   Введите cmd и далее вводите следующие команды:
+   - Легкий тест (1000 RPS, 10 секунд):
+     vegeta.exe attack -duration=10s -rate=1000 -targets=targets.txt | vegeta.exe report
    
-   Легкий тест (1000 RPS, 10 секунд):
-   vegeta.exe attack -duration=10s -rate=1000 -targets=targets.txt | vegeta.exe report
+   - Средний тест (2000 RPS, 20 секунд):
+     vegeta.exe attack -duration=20s -rate=2000 -targets=targets.txt | vegeta.exe report
    
-   Средний тест (2000 RPS, 20 секунд):
-   vegeta.exe attack -duration=20s -rate=2000 -targets=targets.txt | vegeta.exe report
-   
-   Тяжелый тест (5000 RPS, 30 секунд):
-   vegeta.exe attack -duration=30s -rate=5000 -targets=targets.txt | vegeta.exe report
+   - Тяжелый тест (5000 RPS, 30 секунд):
+     vegeta.exe attack -duration=30s -rate=5000 -targets=targets.txt | vegeta.exe report
 
 
 ===============================================================================
@@ -94,32 +94,25 @@ http://localhost:8080
 
 СТРЕСС-ТЕСТЫ (VEGETA)
 ---------------------
-Тест 1 (1000 RPS) (vegeta.exe attack -duration=10s -rate=1000 -targets=targets.txt | vegeta.exe report) - работает в cmd, а не powershell:
+Тест 1 (1000 RPS):
   - Запросов: 9,997
   - Успех: 100%
   - Среднее время: 0.7 мс
-Чтобы запустить введите в консоль cmd и: vegeta.exe attack -duration=10s -rate=1000 -targets=targets.txt | vegeta.exe report
 
 Тест 2 (2000 RPS):
   - Запросов: 39,986
   - Успех: 100%
   - Среднее время: 1.0 мс
-Чтобы запустить введите в консоль cmd и: vegeta.exe attack -duration=20s -rate=2000 -targets=targets.txt | vegeta.exe report
 
 Тест 3 (10000 RPS):
   - Запросов: 99,915
   - Успех: 100%
   - Среднее время: 3.5 мс
-Чтобы запустить введите в консоль cmd и: vegeta.exe attack -duration=10s -rate=10000 -targets=targets.txt | vegeta.exe report
 
 Тест 4 (5000 RPS, 30 сек):
   - Запросов: 149,967
   - Успех: 100%
   - Среднее время: 1.9 мс
-Чтобы запустить введите в консоль cmd и: vegeta.exe attack -duration=30s -rate=5000 -targets=targets.txt | vegeta.exe report
-
-
-ИТОГО: 300,000+ запросов обработано без единой ошибки!
 
 
 ===============================================================================
@@ -144,32 +137,7 @@ wb-l0/
 │   └── index.html       - Веб-интерфейс
 ├── go.mod               - Go зависимости
 ├── go.sum               - Контрольные суммы зависимостей
-└── README.md            - Документация (Markdown)
-
-
-===============================================================================
-                      КОНФИГУРАЦИЯ (Docker)
-===============================================================================
-
-БАЗА ДАННЫХ POSTGRESQL
-----------------------
-Пользователь: wbuser
-Пароль: wbpass
-База данных: wbdb
-Порт: 5432
-
-
-NATS STREAMING
---------------
-URL: nats://localhost:4222
-Cluster ID: test-cluster
-Client ID: order-service
-Channel: orders
-
-
-ПРИЛОЖЕНИЕ
-----------
-Порт: 8080
+└── README.txt           - Документация 
 
 
 ===============================================================================
@@ -179,7 +147,7 @@ Channel: orders
 ПРОБЛЕМА: Приложение не подключается к БД
 -----------------------------------------
 Решение 1: Проверить что PostgreSQL запущен
-  docker-compose ps
+  docker-compose ps (должен быть Up)
 
 Решение 2: Посмотреть логи
   docker-compose logs postgres
@@ -198,7 +166,7 @@ Channel: orders
 
 
 ===============================================================================
-                     ПОЛЕЗНЫЕ КОМАНДЫ DOCKER
+                     ПОЛЕЗНЫЕ КОМАНДЫ ДЛЯ DOCKER
 ===============================================================================
 
 Посмотреть запущенные контейнеры:
